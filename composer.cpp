@@ -33,7 +33,7 @@ void installComposer() {
 
 int main(int argc, char *argv[]) {
     if (checkPHP()) {
-        if (!std::filesystem::exists(getPath() + "/composer.phar")) {
+        if (!filesystem::exists(getPath() + "/composer.phar")) {
             installComposer();
         }
 
