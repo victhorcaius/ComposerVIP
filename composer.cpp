@@ -3,14 +3,9 @@
 #include <filesystem>
 #include <libloaderapi.h>
 #include <unistd.h>
+#include <fstream>
 
 using namespace std;
-
-bool checkPHP() {
-    int check = system("where /q php || exit 1");
-
-    return check == 0 ? true : false;
-}
 
 string getPath() {
     wchar_t path[FILENAME_MAX] = {0};
@@ -18,6 +13,21 @@ string getPath() {
     filesystem::path current_path = filesystem::path(path).parent_path();
 
     return current_path.string();
+}
+
+string checkPHP() {
+    int check = system("where /q php.exe || exit 1");
+    if (check == 0) {
+        system((char*) ("where php.exe > \"" + getPath() + "/php_path.txt\"").c_str());
+        ifstream in((char*) (getPath() + "/php_path.txt").c_str());
+        string php_path;
+        getline(in, php_path);
+        in.close();
+
+        return php_path;
+    }
+
+    return "";
 }
 
 void installComposer() {
@@ -32,12 +42,13 @@ void installComposer() {
 }
 
 int main(int argc, char *argv[]) {
-    if (checkPHP()) {
+    string php_path = checkPHP();
+    if (php_path != "") {
         if (!filesystem::exists(getPath() + "/composer.phar")) {
             installComposer();
         }
 
-        string command = "php " + getPath() + "/composer.phar";
+        string command = php_path + " " + getPath() + "/composer.phar";
         if (argc > 1) {
             command += " ";
             for (int i = 1; i < argc; ++i) {
